@@ -11,8 +11,8 @@
         ArrowUpRight,
     } from "lucide-svelte";
     import { Doc } from "sveltefire";
-    import Coin from "@tabler/icons-svelte/IconCoin.svelte";
-    import Affiliate from "@tabler/icons-svelte/IconAffiliate.svelte";
+    import { IconCoins } from "@tabler/icons-svelte";
+    import { IconUsers } from "@tabler/icons-svelte";
     import { Input } from "@/components/ui/SignupForm";
     import { sendErrorToast, sendSuccessToast } from "@/toast_utils";
     import { onMount } from "svelte";
@@ -106,11 +106,11 @@
                 {/if}
             </button>
             <button class="btn btn-ghost mr-4">
-                <Affiliate />
+                <IconUsers />
                 {teamData.teamName}
             </button>
             <button class="btn btn-ghost mr-4">
-                <Coin />
+                <IconCoins />
                 {(teamData.level || 1) * 100 - 100}
             </button>
             <button
