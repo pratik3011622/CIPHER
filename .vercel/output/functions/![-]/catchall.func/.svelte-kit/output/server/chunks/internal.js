@@ -2,7 +2,7 @@
 !function() {
   try {
     var e = "undefined" != typeof window ? window : "undefined" != typeof global ? global : "undefined" != typeof globalThis ? globalThis : "undefined" != typeof self ? self : {}, n = new e.Error().stack;
-    n && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[n] = "75a6dc5a-a095-42c7-8c69-9656c3cbb85b", e._sentryDebugIdIdentifier = "sentry-dbid-75a6dc5a-a095-42c7-8c69-9656c3cbb85b");
+    n && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[n] = "298ade02-2ab6-4c27-98bb-1777e8670246", e._sentryDebugIdIdentifier = "sentry-dbid-298ade02-2ab6-4c27-98bb-1777e8670246");
   } catch (e2) {
   }
 }();
@@ -191,7 +191,7 @@ const options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "l30o64"
+  version_hash: "rshkpl"
 };
 async function get_hooks() {
   let handle;
