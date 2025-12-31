@@ -26,7 +26,7 @@
                 </p>
             </Countdown>
             <h2 class="relative z-10 bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-4xl md:text-6xl lg:text-7xl font-bold text-transparent">
-                Cipher Saga 2.0
+                Cipher Saga 3.0
             </h2>
             <p></p>
             <p

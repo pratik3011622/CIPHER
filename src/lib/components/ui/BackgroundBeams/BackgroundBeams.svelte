@@ -116,10 +116,10 @@
                             y1="100%"
                             y2="100%"
                     >
-                        <stop stop-color="#FFFFFF" stop-opacity="0"></stop>
-                        <stop stop-color="#FFFFFF"></stop>
-                        <stop offset="32.5%" stop-color="#FFFFFF"></stop>
-                        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"></stop>
+                        <stop stop-color="#FFD700" stop-opacity="0"></stop>
+                        <stop stop-color="##FFD700"></stop>
+                        <stop offset="32.5%" stop-color="#FFD700"></stop>
+                        <stop offset="100%" stop-color="#FFD700" stop-opacity="0"></stop>
                     </linearGradient>
                 </Motion>
             {/each}

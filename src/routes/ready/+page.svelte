@@ -9,7 +9,6 @@
     import { IconBrandGithub, IconBrandGoogle, IconBrandOnlyfans } from '@tabler/icons-svelte';
     import {Label,Input} from '@/components/ui/SignupForm';
     import {LampEffect} from "@/components/ui/LampEffect";
-    import { LoginButton } from 'svelte-auth-ui';
     import { GoogleAuthProvider, signInWithPopup , signOut} from 'firebase/auth';
     import { auth } from '$lib/firebase';
     let isAuthLoading = false;

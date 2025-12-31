@@ -1,4 +1,4 @@
-import type { RequestHandler } from '../$types';
+import type { RequestHandler } from './$types';
 import { adminDB, adminAuth } from '$lib/server/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import * as referralCodes from 'referral-codes';
