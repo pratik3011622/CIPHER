@@ -6,6 +6,7 @@ node_modules
 secrets/
 .env
 .vercel
+.vercel/*
 .env.*
 !.env.example
 vite.config.js.timestamp-*
