@@ -5,7 +5,7 @@
     let showRules = false;
 </script>
 
-<title>Cipher Saga 2.0 - Home</title>
+<title>Cipher Saga 3.0 - Home</title>
 {#if !showRules}
     <div
         class="relative flex h-screen w-full flex-col items-center justify-center rounded-md px-32 antialiased"
@@ -13,7 +13,7 @@
         <BackgroundBeams />
         <div class="px-8 md:px-16 lg:px-32">
             <Countdown
-                from="2025-03-18 23:59:00"
+                from="2026-03-10 23:59:00"
                 dateFormat="YYYY-MM-DD H:m:s"
                 zone="Asia/Kolkata"
                 let:remaining
@@ -32,7 +32,7 @@
             <p
                 class="relative z-10 mx-auto my-2 max-w-lg text-center text-sm text-neutral-500"
             >
-                Where minds meet challenges<br />Think . Connect . Solve
+                Get Ready to experience the ultimate challenge of this year!!<br />Think . Connect . Solve
             </p>
         </div>
         <div
