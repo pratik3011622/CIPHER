@@ -13,7 +13,7 @@
         <BackgroundBeams />
         <div class="px-8 md:px-16 lg:px-32">
             <Countdown
-                from="2026-03-10 23:59:00"
+                from="2026-04-10 23:59:00"
                 dateFormat="YYYY-MM-DD H:m:s"
                 zone="Asia/Kolkata"
                 let:remaining
