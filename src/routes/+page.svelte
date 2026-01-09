@@ -89,13 +89,13 @@
                         <h2
                             class="relative z-10 bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-2xl font-bold text-transparent pb-[1vh]"
                         >
-                            What is Cipher Saga 2.0?
+                            What is Cipher Saga 3.0?
                         </h2>
                         <p
                             class="relative z-10 text-justify text-sm text-neutral-400"
                         >
-                            Cipher Saga 2.0 is an online cryptic hunt event hosted
-                            during EPITOME'25, the annual techno-management fest of Gati Shakti Vishwavidyalaya.
+                            Cipher Saga 3.0 is an online cryptic hunt event hosted
+                            during EPITOME'26, the annual techno-management fest of Gati Shakti Vishwavidyalaya.
                             Participants will team up to tackle a series of
                             challenging levels, deciphering clues and solving
                             riddles to progress. The event will test their wit,
