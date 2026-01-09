@@ -94,8 +94,8 @@
                         <p
                             class="relative z-10 text-justify text-sm text-neutral-400"
                         >
-                            Cipher Saga 3.0 is an online cryptic hunt event hosted
-                            during EPITOME'26, the annual techno-management fest of Gati Shakti Vishwavidyalaya.
+                            Cipher Saga 3.0 is the third installment of the online cryptic hunt event hosted
+                            during EPITOME, the annual techno-management fest of Gati Shakti Vishwavidyalaya.
                             Participants will team up to tackle a series of
                             challenging levels, deciphering clues and solving
                             riddles to progress. The event will test their wit,
