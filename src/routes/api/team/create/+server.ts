@@ -1,13 +1,13 @@
 import type { RequestHandler } from './$types';
-import { adminDB, adminAuth } from '$lib/server/admin';
+import { getAdminDB, getAdminAuth } from '$lib/server/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import * as referralCodes from 'referral-codes';
 import { error, json } from '@sveltejs/kit';
 import axios from "axios";
 let existingTeamNames = new Set<string>();
 let existingTeamCodes = new Map();
-const indexRef = adminDB.collection("index").doc('nameIndex');
-const userIndexRef = adminDB.collection("index").doc("userIndex");
+const indexRef = getAdminDB().collection("index").doc('nameIndex');
+const userIndexRef = getAdminDB().collection("index").doc("userIndex");
 let indexData = false;
 
 export const POST: RequestHandler = async ({ request, cookies, locals }) => {
@@ -27,15 +27,15 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
     if (teamName === undefined || teamName === null || teamName.trim() === "") return error(400, "Bad Request");
     teamName = teamName.toLowerCase();
     if (existingTeamNames.has(teamName)) return error(429, "Team name is already taken");
-    await adminDB.runTransaction(async (transaction) => {
-        const newTeamRef = adminDB.collection('teams').doc();
-        const userRef = adminDB.collection('users').doc(locals.userID!);
+    await getAdminDB().runTransaction(async (transaction) => {
+        const newTeamRef = getAdminDB().collection('teams').doc();
+        const userRef = getAdminDB().collection('users').doc(locals.userID!);
         const teamID = newTeamRef.id;
         let teamCode = referralCodes.generate({
             length: 8,
             count: 1
         })[0].toLowerCase();
-        while (existingTeamCodes[teamCode] !== undefined) {
+        while (existingTeamCodes.get(teamCode) !== undefined) {
             teamCode = referralCodes.generate({
                 length: 8,
                 count: 1,
@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
             })[0].toLowerCase();
         }
         const teamMembers = [locals.userID,];
-        const userRecord = await adminAuth.getUser(locals.userID!);
+        const userRecord = await getAdminAuth().getUser(locals.userID!);
         let data = {
             created: FieldValue.serverTimestamp(),
             last_change: FieldValue.serverTimestamp(),
@@ -76,9 +76,9 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
         let data4 = {};
         data4[locals.userID] = teamID
         await transaction.update(userIndexRef, data4);
-        existingTeamCodes[teamCode] = teamID;
+        existingTeamCodes.set(teamCode, teamID);
         existingTeamNames.add(teamName);
-        let teamcount = (await adminDB.collection('teams').count().get()).data().count;
+        let teamcount = (await getAdminDB().collection('teams').count().get()).data().count;
         try {
             // await fetch(process.env.WEBHOOK || 'http://example.com',{
             //     method: "POST",

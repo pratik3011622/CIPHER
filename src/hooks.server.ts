@@ -1,6 +1,6 @@
 import {sequence} from "@sveltejs/kit/hooks";
 import * as Sentry from "@sentry/sveltekit";
-import { adminAuth, adminDB } from "$lib/server/admin";
+import { getAdminAuth, getAdminDB } from "$lib/server/admin";
 import { FieldValue } from "firebase-admin/firestore";
 import type { Handle } from "@sveltejs/kit";
 import {PUBLIC_SENTRY_DSN} from '$env/static/public';
@@ -12,8 +12,8 @@ Sentry.init({
 let createdUserDataIndex = new Map<string, string>();
 let bannedTeams = new Set<string>();
 let indexLoaded = false;
-const indexRef = adminDB.collection("index").doc('userIndex');
-const bannedTeamsQuery = adminDB.collection("teams").where("banned","==",true);
+const indexRef = getAdminDB().collection("index").doc('userIndex');
+const bannedTeamsQuery = getAdminDB().collection("teams").where("banned","==",true);
 export const handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }) => {
     const sessionCookie = event.cookies.get("__session");
     if (!indexLoaded) {
@@ -44,16 +44,16 @@ export const handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }
             event.locals.userTeam = null;
             return resolve(event);
         }
-        const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie!);
+        const decodedClaims = await getAdminAuth().verifySessionCookie(sessionCookie!);
         event.locals.userID = decodedClaims.uid;
-        if (createdUserDataIndex.has(event.locals.userID)) {
+        if (createdUserDataIndex.has(event.locals.userID!)) {
             event.locals.userExists = true;
-            event.locals.userTeam = createdUserDataIndex.get(event.locals.userID);
-            event.locals.banned = bannedTeams.has(event.locals.userTeam);
+            event.locals.userTeam = createdUserDataIndex.get(event.locals.userID!);
+            event.locals.banned = bannedTeams.has(event.locals.userTeam!);
 
             return resolve(event);
         } else {
-            const docRef = adminDB.collection('users').doc(event.locals.userID);
+            const docRef = getAdminDB().collection('users').doc(event.locals.userID);
             const doc = await docRef.get();
             if (doc.exists) {
                 const data = doc.data();

@@ -1,12 +1,12 @@
 import type { RequestHandler } from '../$types';
-import { adminAuth, adminDB } from '$lib/server/admin';
+import { getAdminAuth, getAdminDB } from '$lib/server/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { error, json } from '@sveltejs/kit';
 
 let existingTeamCodes = new Map();
 let existingTeamMembers = new Map();
-const indexRef = adminDB.collection("index").doc('nameIndex');
-const userIndexRef = adminDB.collection("index").doc("userIndex");
+const indexRef = getAdminDB().collection("index").doc('nameIndex');
+const userIndexRef = getAdminDB().collection("index").doc("userIndex");
 let indexDataLoaded = false;
 
 export const POST: RequestHandler = async ({ request, cookies, locals }) => {
@@ -34,12 +34,12 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
     inviteCode = inviteCode.toLowerCase();
     let shouldCheck = true;
 
-    if ((existingTeamMembers[inviteCode] === undefined || existingTeamMembers[inviteCode] === null) && (existingTeamCodes[inviteCode] === undefined || existingTeamCodes[inviteCode] === null)) {
+    if ((existingTeamMembers.get(inviteCode) === undefined || existingTeamMembers.get(inviteCode) === null) && (existingTeamCodes.get(inviteCode) === undefined || existingTeamCodes.get(inviteCode) === null)) {
         // if we know it exists, don't need to check to get ID
         console.log("no check needed")
         shouldCheck = false;
     }
-    await adminDB.runTransaction(async (transaction) => {
+    await getAdminDB().runTransaction(async (transaction) => {
         let teamID;
         if (shouldCheck) {
             // if it doesn't exist update the data.
@@ -60,10 +60,10 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
         console.log("already in a team check");
         if (locals.userTeam !== null) return error(403, "Already in a team"); // in different team
         teamID = existingTeamCodes.get(inviteCode);
-        const teamRef = adminDB.collection('teams').doc(teamID);
-        const userRef = adminDB.collection('users').doc(locals.userID!);
+        const teamRef = getAdminDB().collection('teams').doc(teamID);
+        const userRef = getAdminDB().collection('users').doc(locals.userID!);
         // docs
-        const userRecord = await adminAuth.getUser(locals.userID!);
+        const userRecord = await getAdminAuth().getUser(locals.userID!);
         let teamData = {
             members: FieldValue.arrayUnion(locals.userID),
         };

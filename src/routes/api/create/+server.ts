@@ -1,11 +1,11 @@
 import type { RequestHandler } from './$types';
-import { adminDB } from '$lib/server/admin';
+import { getAdminDB } from '$lib/server/admin';
 import {FieldValue} from 'firebase-admin/firestore';
 import { error, json } from '@sveltejs/kit';
 import axios from "axios";
 
 let existingUsernames = new Set<string>();
-const indexRef = adminDB.collection("index").doc('nameIndex');
+const indexRef = getAdminDB().collection("index").doc('nameIndex');
 let existingUsernamesLoaded = false;
 export const POST: RequestHandler = async ({ request ,cookies,locals}) => {
     if(existingUsernamesLoaded === false){
@@ -33,8 +33,8 @@ export const POST: RequestHandler = async ({ request ,cookies,locals}) => {
             return error(409, 'Username already exists');
         } else {
             existingUsernames.add(username.toString().toLowerCase());
-            await adminDB.runTransaction(async (transaction) => {
-                const userRef = adminDB.collection('users').doc(locals.userID!);
+            await getAdminDB().runTransaction(async (transaction) => {
+                const userRef = getAdminDB().collection('users').doc(locals.userID!);
                 await transaction.set(userRef,{
                     first,
                     last,
@@ -46,10 +46,10 @@ export const POST: RequestHandler = async ({ request ,cookies,locals}) => {
                 await transaction.update(indexRef,{
                     usernames: FieldValue.arrayUnion(username.toString().toLowerCase())
                 });
-                await transaction.update(adminDB.collection('index').doc('userIndex'),{
+                await transaction.update(getAdminDB().collection('index').doc('userIndex'),{
                     [locals.userID!]: null
                 });
-                let usercount = (await adminDB.collection('users').count().get()).data().count;
+                let usercount = (await getAdminDB().collection('users').count().get()).data().count;
                 try{
                     // await fetch('https://discord.com/api/webhooks/1236288676829466665/wqUcAZtLquT61ViPohQaXR8EDysHKhIqaPA02DJfplov5pCDZTXUEAwHrY0h6iAlu5bd',{
                     //     method: "POST",

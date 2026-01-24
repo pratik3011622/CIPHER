@@ -1,15 +1,15 @@
 import { redirect } from '@sveltejs/kit';
-import { adminDB } from '@/server/admin';
+import { getAdminDB } from '@/server/admin';
 
-const collectionRef = adminDB.collection('/levels').orderBy('level');
+const collectionRef = getAdminDB().collection('/levels').orderBy('level');
 
 let loaded = false;
 let questions = [];
 
 export const load = async ({ locals }) => {
-  const userDoc = await adminDB.collection('/users').doc(locals.userID).get();
-  const teamId = userDoc.data().team;
-  const team = await adminDB.collection('/teams').doc(teamId).get();
+  const userDoc = await getAdminDB().collection('/users').doc(locals.userID).get();
+  const teamId = userDoc.data()?.team;
+  const team = await getAdminDB().collection('/teams').doc(teamId).get();
   const level = team.data().level;
 
   const now = new Date();
