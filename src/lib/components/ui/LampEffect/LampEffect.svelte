@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Motion } from 'svelte-motion';
 	import { cn } from '@/utils';
+
+	export let className = '';
 </script>
 
 <div
