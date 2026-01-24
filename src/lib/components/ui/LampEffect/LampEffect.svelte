@@ -1,3 +1,8 @@
+<script lang="ts">
+	import { Motion } from 'svelte-motion';
+	import { cn } from '@/utils';
+</script>
+
 <div
         class={cn(
 		'relative z-0 flex min-h-screen w-full flex-col items-center justify-center overflow-hidden rounded-md bg-slate-950',
