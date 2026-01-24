@@ -4,14 +4,13 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
-  measurementId: ""
+  apiKey: "AIzaSyDjVYxuV1-bhhdxx69MOeZaDm4MUaBYYV0",
+  authDomain: "cipher-fabae.firebaseapp.com",
+  projectId: "cipher-fabae",
+  storageBucket: "cipher-fabae.firebasestorage.app",
+  messagingSenderId: "344559334588",
+  appId: "1:344559334588:web:d22e1fe1bac4670fb18cb9",
+  measurementId: "G-SMWFYFEQQT"
 };
 
 // Initialize Firebase

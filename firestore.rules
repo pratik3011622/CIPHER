@@ -2,24 +2,8 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /index/{document}{
-      allow read: if false;
+    match /{document=**} {
+      allow read, write: if false;
     }
-    match /users/{document}{
-      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.team == get(/databases/$(database)/documents/users/$(document)).data.team;
-    }
-    match /teams/{document}{
-      allow get: if request.auth.uid != null;
-    }
-    match /levels/{document}{
-      allow read,write: if false;
-    }
-    match /questions/{document} {
-      allow read: if true;
-    }
-    match /logs/{team}{
-      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.team == (team);
-    }
-
   }
 }
