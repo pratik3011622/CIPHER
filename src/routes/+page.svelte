@@ -146,23 +146,116 @@
         </div>
     </footer>
 
-    <!-- Rules Modal (if needed) -->
+    <!-- Rules Modal -->
     {#if showRules}
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-neutral-900 p-8 rounded-lg max-w-2xl mx-4">
-                <h2 class="text-2xl font-bold text-white mb-4">Event Rules</h2>
-                <div class="text-neutral-300 space-y-2 mb-6">
-                    <p>• Teams must consist of 2-4 members</p>
-                    <p>• All solutions must be submitted through the platform</p>
-                    <p>• Fair play is mandatory - no external help allowed</p>
-                    <p>• Winners will be announced at the closing ceremony</p>
+        <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div class="bg-neutral-900 p-8 rounded-lg max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
+                <h2 class="text-3xl font-bold text-white mb-6 text-center">Cipher Saga 3.0 - Event Details</h2>
+
+                <!-- Event Overview -->
+                <section class="mb-8">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3">Event Overview</h3>
+                    <p class="text-neutral-300 mb-4">
+                        Cipher Saga 3.0 is the ultimate treasure hunt challenge of the year, designed to test your logical thinking,
+                        problem-solving skills, and teamwork abilities. Navigate through a series of cryptic puzzles and codes
+                        to emerge victorious!
+                    </p>
+                </section>
+
+                <!-- Rules -->
+                <section class="mb-8">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3">Rules & Guidelines</h3>
+                    <div class="text-neutral-300 space-y-2">
+                        <div class="flex items-start space-x-3">
+                            <span class="text-green-400 font-bold">•</span>
+                            <p>Teams must consist of 2-4 members from the same institution</p>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <span class="text-green-400 font-bold">•</span>
+                            <p>All solutions must be submitted through the official platform</p>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <span class="text-green-400 font-bold">•</span>
+                            <p>Fair play is mandatory - no external help or unauthorized collaboration</p>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <span class="text-green-400 font-bold">•</span>
+                            <p>The event duration and specific mechanics will be announced at the start</p>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <span class="text-green-400 font-bold">•</span>
+                            <p>Winners will be determined by the highest score achieved within the time limit</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Event Heads -->
+                <section class="mb-8">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3">Event Heads</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-neutral-800 p-4 rounded-lg">
+                            <h4 class="text-white font-semibold">Soham Wani</h4>
+                            <p class="text-neutral-400">Event Coordinator</p>
+                            <p class="text-neutral-400 text-sm">soham.wani@gsv.ac.in</p>
+                        </div>
+                        <div class="bg-neutral-800 p-4 rounded-lg">
+                            <h4 class="text-white font-semibold">TechnoCrats Team</h4>
+                            <p class="text-neutral-400">Technical Team</p>
+                            <p class="text-neutral-400 text-sm">technocrats@gsv.ac.in</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Volunteers -->
+                <section class="mb-8">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3">Volunteers</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div class="bg-neutral-800 p-3 rounded-lg text-center">
+                            <p class="text-white font-medium">Volunteer 1</p>
+                            <p class="text-neutral-400 text-sm">Support Team</p>
+                        </div>
+                        <div class="bg-neutral-800 p-3 rounded-lg text-center">
+                            <p class="text-white font-medium">Volunteer 2</p>
+                            <p class="text-neutral-400 text-sm">Tech Support</p>
+                        </div>
+                        <div class="bg-neutral-800 p-3 rounded-lg text-center">
+                            <p class="text-white font-medium">Volunteer 3</p>
+                            <p class="text-neutral-400 text-sm">Registration</p>
+                        </div>
+                        <div class="bg-neutral-800 p-3 rounded-lg text-center">
+                            <p class="text-white font-medium">Volunteer 4</p>
+                            <p class="text-neutral-400 text-sm">Logistics</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Thanks -->
+                <section class="mb-8">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3">Special Thanks</h3>
+                    <div class="text-neutral-300 space-y-2">
+                        <p>• GSV College administration for their continuous support</p>
+                        <p>• TechnoCrats team for developing this platform</p>
+                        <p>• All participants for making this event exciting</p>
+                        <p>• Our sponsors and partners for their valuable contributions</p>
+                    </div>
+                </section>
+
+                <!-- Contact -->
+                <section class="mb-6">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3">Contact Us</h3>
+                    <p class="text-neutral-300">
+                        For any queries, reach out to the event heads or visit our social media channels.
+                    </p>
+                </section>
+
+                <div class="text-center">
+                    <button
+                        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-300"
+                        onClick={() => showRules = false}
+                    >
+                        Get Started
+                    </button>
                 </div>
-                <button
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
-                    onClick={() => showRules = false}
-                >
-                    Close
-                </button>
             </div>
         </div>
     {/if}
