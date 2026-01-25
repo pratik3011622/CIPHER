@@ -12,11 +12,11 @@ Sentry.init({
 let createdUserDataIndex = new Map<string, string>();
 let bannedTeams = new Set<string>();
 let indexLoaded = false;
-const indexRef = getAdminDB().collection("index").doc('userIndex');
-const bannedTeamsQuery = getAdminDB().collection("teams").where("banned","==",true);
 export const handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }) => {
     const sessionCookie = event.cookies.get("__session");
     if (!indexLoaded) {
+        const indexRef = getAdminDB().collection("index").doc('userIndex');
+        const bannedTeamsQuery = getAdminDB().collection("teams").where("banned","==",true);
         const doc = await indexRef.get();
         const qSnap = await bannedTeamsQuery.get();
         qSnap.docs.forEach((e)=>bannedTeams.add(e.id));

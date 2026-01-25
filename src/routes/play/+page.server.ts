@@ -1,6 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 import { getAdminDB } from '../../lib/server/admin';
 
+export const prerender = false;
+
 export const load = async ({ locals }) => {
   try {
     if (
