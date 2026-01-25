@@ -42,19 +42,27 @@
     $: progVal = accState === AccountState.GOOGLE_SIGN_IN ? 0 : (accState === AccountState.USERNAME_NAME ? 33.3 : (accState === AccountState.TEAM_SELECT ? 66.6 : 100))
     async function signInWithGoogle() {
         isAuthLoading = true;
-        const provider = new GoogleAuthProvider();
-        const credential = await signInWithPopup(auth, provider);
-        const idToken = await credential.user.getIdToken();
-        const res = await fetch("/api/auth", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ idToken }),
-
-        });
-
-        await invalidateAll();
+        try {
+            const provider = new GoogleAuthProvider();
+            const credential = await signInWithPopup(auth, provider);
+            const idToken = await credential.user.getIdToken();
+            const res = await fetch("/api/auth", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ idToken }),
+            });
+            if (res.ok) {
+                await invalidateAll();
+            } else {
+                console.error('Auth failed:', await res.text());
+                sendErrorToast('Sign in failed');
+            }
+        } catch (error) {
+            console.error('Google sign in error:', error);
+            sendErrorToast('Google sign in failed');
+        }
         isAuthLoading = false;
     }
 
