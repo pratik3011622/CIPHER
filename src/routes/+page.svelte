@@ -37,7 +37,7 @@
                 </div>
             </Countdown>
 
-            <h1 class="bg-gradient-to-b from-neutral-200 via-neutral-100 to-primary bg-clip-text text-transparent font-sans text-5xl md:text-7xl lg:text-8xl font-bold mb-6">
+            <h1 class="bg-gradient-to-b from-neutral-200 via-neutral-100 to-primary bg-clip-text text-transparent font-sans text-5xl md:text-7xl lg:text-8xl font-bold mb-6 mt-4">
                 Cipher Saga 3.0
             </h1>
 
@@ -134,13 +134,21 @@
         <div class="max-w-6xl mx-auto px-4 md:px-8 text-center">
             <h3 class="text-2xl font-bold text-white mb-4">Organized by TechnoCrats</h3>
             <p class="text-neutral-400 mb-6">Part of the annual techfest bringing innovation and excitement to our community.</p>
-            <div class="flex justify-center space-x-6">
+            <div class="flex justify-center space-x-6 mb-4">
                 <a href="" class="text-neutral-400 hover:text-white transition-colors">
                     <img src="https://i.ibb.co/whYZ0Ws3/Whats-App-Image-2025-03-13-at-9-40-35-PM.jpg" alt="Soham Wani" class="w-10 h-10 rounded-full" />
                 </a>
                 <a href="" class="text-neutral-400 hover:text-white transition-colors">
                     <img src="https://i.ibb.co/qM2wVX1z/Logo.png" alt="TechnoCrats" class="w-10 h-10 rounded-full" />
                 </a>
+            </div>
+            <div class="text-center">
+                <button
+                    class="text-neutral-400 hover:text-white transition-colors underline"
+                    onClick={() => (showRules = true)}
+                >
+                    Read More
+                </button>
             </div>
             <p class="text-neutral-500 text-sm mt-6">© 2026 Cipher Saga 3.0. All rights reserved.</p>
         </div>

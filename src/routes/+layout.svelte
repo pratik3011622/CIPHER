@@ -29,13 +29,6 @@
     <a class="btn btn-ghost text-md" class:text-primary={$page.url.pathname==="/leaderboard"} href="/leaderboard"><ArrowUpRight/> Leaderboard</a>
     {#if ![undefined,null].includes(data.userTeam)}<a class="btn btn-ghost text-md" class:text-primary={$page.url.pathname==="/team"} href="/team"><ArrowUpRight/> Team</a>{/if}
     {#if data.banned === false && ![undefined,null].includes(data.userTeam)}<a class="btn btn-ghost text-md" href="/play"><Disc /> Play</a>{/if}
-    <button class="btn btn-ghost text-md" on:click={() => mode.set($mode === 'dark' ? 'light' : 'dark')}>
-        {#if $mode === 'dark'}
-            <Sun />
-        {:else}
-            <Moon />
-        {/if}
-    </button>
 </div>
 {/if}
 {#if ["/ready"].includes($page.url.pathname)}
