@@ -145,7 +145,7 @@
             <div class="text-center">
                 <button
                     class="text-neutral-400 hover:text-white transition-colors underline"
-                    onClick={() => (showRules = true)}
+                    on:click={() => (showRules = true)}
                 >
                     Read More
                 </button>
