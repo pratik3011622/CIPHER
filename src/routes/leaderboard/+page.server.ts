@@ -1,5 +1,5 @@
 /** @type {import('./$types').PageLoad} */
-import {getAdminDB} from "@/server/admin";
+import {getAdminDB} from "../../lib/server/admin";
 import { error } from '@sveltejs/kit';
 
 export const load = async ({ locals, params }) => {
