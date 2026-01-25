@@ -1,52 +1,8 @@
 import { redirect } from '@sveltejs/kit';
-import { getAdminDB } from '@/server/admin';
-
-const collectionRef = getAdminDB().collection('/levels').orderBy('level');
-
-let loaded = false;
-let questions = [];
+import { getAdminDB } from '../../lib/server/admin';
 
 export const load = async ({ locals }) => {
-  const userDoc = await getAdminDB().collection('/users').doc(locals.userID).get();
-  const teamId = userDoc.data()?.team;
-  const team = await getAdminDB().collection('/teams').doc(teamId).get();
-  const level = team.data().level;
-
-  const now = new Date();
-  const startTime = new Date("2026-03-10T18:39:00Z");
-  const endTime = new Date("2026-03-14T18:39:00Z");
-
-  const questionsVisible = now >= startTime && now <= endTime;
-
-  if (questionsVisible) {
-
-    if (locals.banned) {
-      return redirect(302, '/team');
-    }
-
-    if (!loaded) {
-      const querySnapshot = await collectionRef.get();
-      querySnapshot.docs.forEach((d) => {
-        let data = d.data();
-        data['answer'] = null;
-        data['creator'] = null;
-        questions.push(data);
-      });
-
-      collectionRef.onSnapshot((newSnapshot) => {
-        const newQuestions = [];
-        newSnapshot.docs.forEach((d) => {
-          let newData = d.data();
-          newData['answer'] = null;
-          newData['creator'] = null;
-          newQuestions.push(newData);
-        });
-        questions = newQuestions;
-        console.log('new update');
-      });
-      loaded = true;
-    }
-
+  try {
     if (
       !locals.userID ||
       !locals.userExists ||
@@ -54,10 +10,41 @@ export const load = async ({ locals }) => {
     ) {
       return redirect(302, '/ready');
     }
-  }
 
-  return {
-    locals,
-    questions: questions.slice(0, level),
-  };
+    const userDoc = await getAdminDB().collection('/users').doc(locals.userID).get();
+    const teamId = userDoc.data()?.team;
+    const team = await getAdminDB().collection('/teams').doc(teamId).get();
+    const level = team.data().level;
+
+    const now = new Date();
+    const startTime = new Date("2026-03-10T18:39:00Z");
+    const endTime = new Date("2026-03-14T18:39:00Z");
+
+    const questionsVisible = now >= startTime && now <= endTime;
+
+    let questions = [];
+
+    if (questionsVisible) {
+      if (locals.banned) {
+        return redirect(302, '/team');
+      }
+
+      const collectionRef = getAdminDB().collection('/levels').orderBy('level');
+      const querySnapshot = await collectionRef.get();
+      querySnapshot.docs.forEach((d) => {
+        let data = d.data();
+        data['answer'] = null;
+        data['creator'] = null;
+        questions.push(data);
+      });
+    }
+
+    return {
+      locals,
+      questions: questions.slice(0, level),
+    };
+  } catch (err) {
+    console.error('Error loading play page:', err);
+    throw redirect(302, '/ready');
+  }
 };
