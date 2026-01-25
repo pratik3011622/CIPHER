@@ -69,29 +69,6 @@
                 </div>
             </section>
 
-            <!-- Volunteers -->
-            <section class="mb-8">
-                <h3 class="text-xl font-semibold text-blue-400 mb-3">Volunteers</h3>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    <div class="bg-neutral-800 p-3 rounded-lg text-center">
-                        <p class="text-white font-medium">Volunteer 1</p>
-                        <p class="text-neutral-400 text-sm">Support Team</p>
-                    </div>
-                    <div class="bg-neutral-800 p-3 rounded-lg text-center">
-                        <p class="text-white font-medium">Volunteer 2</p>
-                        <p class="text-neutral-400 text-sm">Tech Support</p>
-                    </div>
-                    <div class="bg-neutral-800 p-3 rounded-lg text-center">
-                        <p class="text-white font-medium">Volunteer 3</p>
-                        <p class="text-neutral-400 text-sm">Registration</p>
-                    </div>
-                    <div class="bg-neutral-800 p-3 rounded-lg text-center">
-                        <p class="text-white font-medium">Volunteer 4</p>
-                        <p class="text-neutral-400 text-sm">Logistics</p>
-                    </div>
-                </div>
-            </section>
-
             <!-- Thanks -->
             <section class="mb-8">
                 <h3 class="text-xl font-semibold text-blue-400 mb-3">Special Thanks</h3>
