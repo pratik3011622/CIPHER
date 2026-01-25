@@ -81,14 +81,14 @@
             >
                 <ArrowLeft />
             </button>
-            <a
+            <span
                 class="btn btn-ghost text-xl"
                 class:text-primary={(teamData.completed_levels || []).includes(
                     currQuestionData.uid,
                 )}
             >
                 Level {questions[currQuestion].level}/{questions.length}
-            </a>
+            </span>
             <button
                 class="btn btn-square mr-4"
                 on:click={() => {
@@ -131,6 +131,7 @@
                     {#each currQuestionData.files as f}
                         <span
                             class="link link-primary"
+                            role="button"
                             on:click={() => open(f.url)}>{f.name}</span
                         >
                     {/each}
@@ -141,7 +142,7 @@
                 <center class="mb-4">
                     <div class="flex justify-center flex-row h-60">
                         {#each currQuestionData.images as i}
-                            <img class="mr-2 ml-2 rounded-lg" src={i} />
+                            <img class="mr-2 ml-2 rounded-lg" src={i} alt="Question image" />
                         {/each}
                     </div>
                 </center>

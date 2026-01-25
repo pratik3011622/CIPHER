@@ -351,15 +351,13 @@
             <div class="pb-6">
                 <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="flex flex-col items-center">
-                        <a href="">
-                            <img src="https://i.ibb.co/whYZ0Ws3/Whats-App-Image-2025-03-13-at-9-40-35-PM.jpg" alt="Soham Wani" class="w-20 h-20 rounded-full mb-2 mx-auto object-cover" />
-                            <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-xl font-bold text-transparent">
-                                Soham Wani
-                            </h2>
-                            <p class="text-center text-sm text-neutral-400 pb-2">
-                                (Event Head)
-                            </p>
-                        </a>
+                        <img src="https://i.ibb.co/whYZ0Ws3/Whats-App-Image-2025-03-13-at-9-40-35-PM.jpg" alt="Soham Wani" class="w-20 h-20 rounded-full mb-2 mx-auto object-cover" />
+                        <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-xl font-bold text-transparent">
+                            Soham Wani
+                        </h2>
+                        <p class="text-center text-sm text-neutral-400 pb-2">
+                            (Event Head)
+                        </p>
                     </div>
                     <div class="flex flex-col items-center">
                         <a href="https://www.linkedin.com/in/shreya-mohanty-755529296/">
@@ -415,15 +413,13 @@
                         </a>
                     </div>
                     <div class="flex flex-col items-center">
-                        <a href="">
-                            <img src="https://i.ibb.co/qM2wVX1z/Logo.png" alt="TechnoCrats" class="w-20 h-20 rounded-full mb-2 mx-auto" />
-                            <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-xl font-bold text-transparent">
-                                TechnoCrats
-                            </h2>
-                            <p class="text-center text-sm text-neutral-400 pb-2">
-                                (Conducted By)
-                            </p>
-                        </a>
+                        <img src="https://i.ibb.co/qM2wVX1z/Logo.png" alt="TechnoCrats" class="w-20 h-20 rounded-full mb-2 mx-auto" />
+                        <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-xl font-bold text-transparent">
+                            TechnoCrats
+                        </h2>
+                        <p class="text-center text-sm text-neutral-400 pb-2">
+                            (Conducted By)
+                        </p>
                     </div>
                 </div>
             </div>
