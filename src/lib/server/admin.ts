@@ -1,6 +1,9 @@
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import pkg from 'firebase-admin';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const FB_CLIENT_EMAIL = process.env.FB_CLIENT_EMAIL;
 const FB_PRIVATE_KEY = process.env.FB_PRIVATE_KEY;
