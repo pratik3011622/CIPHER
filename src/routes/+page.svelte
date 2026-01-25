@@ -203,15 +203,14 @@
             </button>
         </div>
     </div>
-{/if}
-                    borderRadius="0.75rem"
-                    className="bg-white-300 text-white border-slate-800 text-sm font-bold"
-                    onClick={() => (showRules = !showRules)}
-                >
-                    Read Me
-                </Button>
-            </div>
-        </div>
+    <div class="text-center mt-8">
+        <Button
+            borderRadius="0.75rem"
+            className="bg-white-300 text-white border-slate-800 text-sm font-bold"
+            onClick={() => (showRules = !showRules)}
+        >
+            Read Me
+        </Button>
     </div>
 {/if}
 {#if showRules}
