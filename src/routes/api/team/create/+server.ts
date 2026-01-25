@@ -4,19 +4,14 @@ import { FieldValue } from 'firebase-admin/firestore';
 import * as referralCodes from 'referral-codes';
 import { error, json } from '@sveltejs/kit';
 import axios from "axios";
-let existingTeamNames = new Set<string>();
-let existingTeamCodes = new Map();
-const indexRef = getAdminDB().collection("index").doc('nameIndex');
-const userIndexRef = getAdminDB().collection("index").doc("userIndex");
-let indexData = false;
-
 export const POST: RequestHandler = async ({ request, cookies, locals }) => {
-    if (!indexData) {
-        const data = (await indexRef.get()).data();
-        data.teamnames.forEach((e) => existingTeamNames.add(e));
-        existingTeamCodes = data.teamcodes;
-
-    }
+    const indexRef = getAdminDB().collection("index").doc('nameIndex');
+    const userIndexRef = getAdminDB().collection("index").doc("userIndex");
+    const doc = await indexRef.get();
+    const data = doc.data();
+    if (!data) return json({ error: 'Index not found' }, { status: 500 });
+    const existingTeamNames = new Set(data.teamnames || []);
+    const existingTeamCodes = new Map(Object.entries(data.teamcodes || {}));
 
     if (locals.userID === null || !locals.userExists || locals.userTeam !== null) {
         return error(401, 'Unauthorized');

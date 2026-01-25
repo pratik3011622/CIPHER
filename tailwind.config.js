@@ -3,6 +3,7 @@ import flattenColorPalette from 'tailwindcss/lib/util/flattenColorPalette';
 import aspectRatio from '@tailwindcss/aspect-ratio';
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
+  darkMode: 'class',
   theme: {
     extend: {},
   },
