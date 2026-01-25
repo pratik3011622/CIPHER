@@ -345,6 +345,46 @@
             </div>
             <div class="pb-6">
                 <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-3xl font-bold text-transparent pb-2">
+                    Our Team
+                </h2>
+            </div>
+            <div class="pb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex flex-col items-center">
+                        <img src="https://i.ibb.co/whYZ0Ws3/Whats-App-Image-2025-03-13-at-9-40-35-PM.jpg" alt="Soham Wani" class="w-20 h-20 rounded-full mb-2 mx-auto object-cover" />
+                        <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-xl font-bold text-transparent">
+                            Soham Wani
+                        </h2>
+                        <p class="text-center text-sm text-neutral-400 pb-2">
+                            (Event Head)
+                        </p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <a href="https://www.linkedin.com/in/shreya-mohanty-755529296/">
+                            <img src="https://i.ibb.co/d4v8xBmj/IMG-20250314-WA0093.jpg" alt="Shreya Mohanty" class="w-20 h-20 rounded-full mb-2 mx-auto object-cover" />
+                            <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-xl font-bold text-transparent">
+                                Shreya Mohanty
+                            </h2>
+                            <p class="text-center text-sm text-neutral-400 pb-2">
+                                (Event Head)
+                            </p>
+                        </a>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <a href="https://www.linkedin.com/in/rishav-kumar-2399241ab/">
+                            <img src="https://i.ibb.co/tpyz2pZL/58198da2-d4f5-4e08-bbe8-085c751453ff.jpg" alt="Rishav Kumar" class="w-20 h-20 rounded-full mb-2 mx-auto object-cover" />
+                            <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-xl font-bold text-transparent">
+                                Rishav Kumar
+                            </h2>
+                            <p class="text-center text-sm text-neutral-400 pb-2">
+                                (Volunteer)
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="pb-6">
+                <h2 class="bg-gradient-to-b from-neutral-200 to-primary bg-clip-text text-center font-sans text-3xl font-bold text-transparent pb-2">
                     Special Thanks
                 </h2>
             </div>
