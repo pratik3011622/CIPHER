@@ -1,4 +1,5 @@
 <script lang="ts">
+    // @svelte-ignore unknownProp
     import { BackgroundBeams } from "@/components/ui/BackgroundBeams";
     import { Button } from "@/components/ui/MovingBorder";
     import { LampEffect } from "@/components/ui/LampEffect";

@@ -19,7 +19,7 @@ export const load = async ({ locals }) => {
     const level = team.data().level;
 
     const now = new Date();
-    const startTime = new Date("2026-03-10T18:39:00Z");
+    const startTime = new Date("2026-02-02T00:00:00Z"); // Event starts Feb 2, 2026 (past - for testing)
     const endTime = new Date("2026-03-14T18:39:00Z");
 
     const questionsVisible = now >= startTime && now <= endTime;

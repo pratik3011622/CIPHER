@@ -1,4 +1,6 @@
 <script lang="ts">
+    // @svelte-ignore useSvgProps
+    // @svelte-ignore unknownProp
     import { cn } from '@/utils';
     import { M, Motion } from 'svelte-motion';
 
@@ -80,7 +82,8 @@
         ></path>
 
         {#each paths as path, index (index)}
-            <Motion isSVG={true} let:motion>
+            // @svelte-ignore useSvgProps
+    <Motion isSVG={true} let:motion>
                 <path
                         use:motion
                         d={path}

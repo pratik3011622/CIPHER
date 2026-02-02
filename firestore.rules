@@ -2,8 +2,39 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Allow authenticated users to read bonus-related collections
+    match /bonus_codes/{bonusCode} {
+      allow read: if request.auth != null;
+    }
+    
+    match /time_bonuses/{bonusId} {
+      allow read: if request.auth != null;
+    }
+    
+    match /qr_bonuses/{bonusId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Team-related collections
+    match /teams/{teamId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Index and other utility collections
+    match /index/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow all authenticated access for now (can be tightened later)
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if request.auth != null;
     }
   }
 }

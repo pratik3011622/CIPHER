@@ -1,4 +1,5 @@
 <script lang="ts">
+    // @svelte-ignore unknownProp
     import "../app.css"
     import {ToastContainer,BootstrapToast} from "svelte-toasts";
     import {auth,db,storage } from '$lib/firebase';

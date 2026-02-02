@@ -1,25 +1,28 @@
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import pkg from 'firebase-admin';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const FB_CLIENT_EMAIL = process.env.FB_CLIENT_EMAIL;
-const FB_PRIVATE_KEY = process.env.FB_PRIVATE_KEY;
-const FB_PROJECT_ID = process.env.FB_PROJECT_ID;
+import { FB_CLIENT_EMAIL, FB_PROJECT_ID } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 let app: any = null;
 
 function initializeAdmin() {
     if (!app) {
+        const FB_PRIVATE_KEY = env.FB_PRIVATE_KEY;
+        
         if (FB_PROJECT_ID && FB_CLIENT_EMAIL && FB_PRIVATE_KEY) {
             try {
+                // Handle escaped newlines
+                let privateKey = FB_PRIVATE_KEY;
+                if (privateKey.includes('\\n')) {
+                    privateKey = privateKey.replace(/\\n/g, '\n');
+                }
+                
                 app = pkg.initializeApp({
                     credential: pkg.credential.cert({
                         projectId: FB_PROJECT_ID,
                         clientEmail: FB_CLIENT_EMAIL,
-                        privateKey: FB_PRIVATE_KEY.replace(/\\n/g, '\n'),
+                        privateKey: privateKey,
                     }),
                 });
             } catch (err: any) {
