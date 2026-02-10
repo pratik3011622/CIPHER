@@ -1,121 +1,117 @@
 import type { RequestHandler } from './$types';
-import { error, json } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminDB } from '$lib/server/admin';
+import { adminDB } from '$lib/server/admin';
 
-const bonusCodesCollectionRef = getAdminDB().collection("/bonus_codes");
+const bonusQuestionsRef = adminDB.collection("bonus_questions");
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     if (locals.userTeam === null || !locals.userExists || locals.userID === null) {
         return json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    let { code } = await request.json();
-    
-    if (!code || code.trim() === "") {
-        return json({ error: "Code is required" }, { status: 400 });
+    let { questionId, answer } = await request.json();
+
+    if (!questionId || !answer || answer.trim() === "") {
+        return json({ error: "Answer is required" }, { status: 400 });
     }
 
-    code = code.toUpperCase().trim();
+    answer = answer.trim().toLowerCase();
 
     try {
-        // Find the bonus code in database
-        const querySnap = await bonusCodesCollectionRef.where("code", "==", code).get();
-        
-        if (querySnap.empty) {
-            return json({ 
-                correct: false, 
-                message: "Invalid code" 
-            });
-        }
+        const teamId = locals.userTeam;
 
-        const bonusDoc = querySnap.docs[0];
-        const bonusData = bonusDoc.data();
-        const bonusId = bonusDoc.id;
+        // Run transaction to ensure atomic solve
+        const result = await adminDB.runTransaction(async (transaction) => {
+            const questionRef = bonusQuestionsRef.doc(questionId);
+            const questionDoc = await transaction.get(questionRef);
 
-        // Get user's team
-        const userDoc = await getAdminDB().collection('/users').doc(locals.userID).get();
-        const teamId = userDoc.data()?.team;
-        const teamRef = getAdminDB().collection('/teams').doc(teamId);
-        const teamDoc = await teamRef.get();
-        const teamData = teamDoc.data();
-
-        // Check if this bonus is already completed by this team
-        const completedBonuses = teamData?.bonus_codes_completed || [];
-        if (completedBonuses.includes(bonusId)) {
-            return json({ 
-                correct: true, 
-                message: "Bonus already claimed!",
-                alreadyClaimed: true
-            });
-        }
-
-        // Check if someone else already claimed this code
-        if (bonusData.winner_team_id && bonusData.winner_team_id !== teamId) {
-            return json({ 
-                correct: false, 
-                message: "This code has already been claimed by another team!",
-                alreadyClaimed: true
-            });
-        }
-
-        // Use transaction to ensure atomic winner assignment
-        await getAdminDB().runTransaction(async (transaction) => {
-            const bonusRef = bonusCodesCollectionRef.doc(bonusId);
-            const bonusSnapshot = await bonusRef.get();
-            const currentBonusData = bonusSnapshot.data();
-
-            // Double-check no one claimed it during transaction
-            if (currentBonusData?.winner_team_id && currentBonusData.winner_team_id !== teamId) {
-                throw new Error("Code already claimed");
+            if (!questionDoc.exists) {
+                throw new Error("Question not found");
             }
 
-            // Mark this team as the winner and add to their completed bonuses
-            transaction.update(bonusRef, {
-                winner_team_id: teamId,
-                winner_timestamp: FieldValue.serverTimestamp()
+            const data = questionDoc.data();
+
+            if (!data?.is_active) {
+                throw new Error("Question is not active");
+            }
+
+            // Check if already solved
+            if (data.solved_by_team_id) {
+                if (data.solved_by_team_id === teamId) {
+                    return { alreadySolvedByUs: true };
+                }
+                throw new Error("Question already solved by another team");
+            }
+
+            // Verify answer
+            // Allow for multiple valid answers if 'answers' array exists, else check 'answer' string
+            const correctAnswers = data.answers ? data.answers.map((a: string) => a.toLowerCase()) : [data.answer.toLowerCase()];
+
+            if (!correctAnswers.includes(answer)) {
+                return { correct: false };
+            }
+
+            // Mark as solved
+            transaction.update(questionRef, {
+                solved_by_team_id: teamId,
+                solved_at: FieldValue.serverTimestamp()
             });
 
+            // Award points to team
+            const teamRef = adminDB.collection('/teams').doc(teamId);
             transaction.update(teamRef, {
-                bonus_codes_completed: FieldValue.arrayUnion(bonusId),
-                total_bonus_points: FieldValue.increment(bonusData.points || 500),
-                level: FieldValue.increment(1) // Bonus level completion
+                bonus_questions_solved: FieldValue.arrayUnion(questionId),
+                total_bonus_points: FieldValue.increment(data.points || 1000)
             });
 
-            // Log the bonus win
-            const logRef = getAdminDB().collection("logs").doc(teamId);
+            // Log
+            const logRef = adminDB.collection("logs").doc(teamId);
             transaction.set(logRef, {
                 count: FieldValue.increment(1),
                 logs: FieldValue.arrayUnion({
-                    "timestamp": new Date().toLocaleString("en-IN", {
-                        timeZone: "Asia/Kolkata",
-                        hour12: true
-                    }),
-                    "bonusId": bonusId,
-                    "type": "bonus_code_won",
-                    "code": code,
-                    "userId": locals.userID
+                    timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+                    type: "bonus_question_solved",
+                    questionId: questionId,
+                    points: data.points
                 })
             }, { merge: true });
+
+            return { correct: true, points: data.points };
         });
 
-        return json({ 
-            correct: true, 
-            message: `🎉 Congratulations! You claimed the bonus code ${code}!`,
-            points: bonusData.points || 500
-        });
-
-    } catch (err: any) {
-        console.error('Error submitting bonus code:', err);
-        
-        if (err.message === "Code already claimed") {
-            return json({ 
-                correct: false, 
-                message: "This code has already been claimed by another team!",
-                alreadyClaimed: true
+        if (result.alreadySolvedByUs) {
+            return json({
+                correct: true,
+                message: "You have already solved this question!",
+                alreadySolved: true
             });
         }
 
-        return json({ error: "Something went wrong" }, { status: 500 });
+        if (!result.correct) {
+            return json({
+                correct: false,
+                message: "Incorrect answer. Try again!"
+            });
+        }
+
+        return json({
+            correct: true,
+            message: `🎉 Correct! You won ${result.points} points!`,
+            points: result.points
+        });
+
+    } catch (err: any) {
+        console.error('Error submitting bonus answer:', err);
+
+        if (err.message === "Question already solved by another team") {
+            return json({
+                correct: false,
+                message: "Too late! Another team just solved it.",
+                gone: true // Frontend should refresh to hide it
+            });
+        }
+
+        return json({ error: err.message || "Something went wrong" }, { status: 500 });
     }
 };

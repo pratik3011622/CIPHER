@@ -1,5 +1,5 @@
 import type { RequestHandler } from '../$types';
-import { getAdminDB, getAdminAuth } from '$lib/server/admin';
+import { adminDB, adminAuth } from '$lib/server/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { error, json } from '@sveltejs/kit';
 
@@ -9,9 +9,9 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
         return error(401, 'Unauthorized');
     } else {
 
-        const userDoc = await getAdminDB().collection('/users').doc(locals.userID).get();
-        const teamId = userDoc.data()?.team;
-        const team = await getAdminDB().collection('/teams').doc(teamId).get();
+        const userDoc = await adminDB.collection('/users').doc(locals.userID).get();
+        const teamId = userDoc.data().team;
+        const team = await adminDB.collection('/teams').doc(teamId).get();
         const level = team.data().level;
         let isAdmin = false;
         try {
@@ -27,11 +27,11 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
         const now = new Date();
         const startTime = new Date("2025-03-18T18:39:00Z");
 
-        await getAdminDB().runTransaction(async (transaction) => {
-            const userRef = getAdminDB().collection('users').doc(locals.userID!);
-            const teamRef = getAdminDB().collection("teams").doc(locals.userTeam!);
-            const nameIndexRef = getAdminDB().collection('index').doc('nameIndex');
-            const userIndexRef = getAdminDB().collection('index').doc('userIndex');
+        await adminDB.runTransaction(async (transaction) => {
+            const userRef = adminDB.collection('users').doc(locals.userID!);
+            const teamRef = adminDB.collection("teams").doc(locals.userTeam!);
+            const nameIndexRef = adminDB.collection('index').doc('nameIndex');
+            const userIndexRef = adminDB.collection('index').doc('userIndex');
 
             const teamData = (await transaction.get(teamRef)).data();
             if (!(now <= startTime) && !isAdmin) return error(405, "Method Not Allowed");
@@ -52,7 +52,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
                     gsv_verified: true,
                 };
                 for (const id of newMembers) {
-                    const userRecord = await getAdminAuth().getUser(id);
+                    const userRecord = await adminAuth.getUser(id);
                     if (!userRecord.email?.toString().endsWith("gsv.ac.in")) {
                         data.gsv_verified = false;
                         break;

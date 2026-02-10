@@ -1,200 +1,83 @@
 <script lang="ts">
-    import { onDestroy } from "svelte";
+    import { onMount } from "svelte";
     import { 
         Gift, 
-        Clock, 
-        MapPin, 
-        CheckCircle, 
-        XCircle, 
-        Trophy,
-        AlertTriangle,
-        RefreshCw,
-        QrCode,
-        Camera
+        Trophy, 
+        AlertTriangle, 
+        CheckCircle,
     } from "lucide-svelte";
     import { Input } from "@/components/ui/SignupForm";
     import { sendErrorToast, sendSuccessToast } from "@/lib/toast_utils";
 
-    export let bonusCodes: any[] = [];
-    export let timeLockedBonuses: any[] = [];
-    export let qrBonuses: any[] = [];
     export let teamBonusPoints: number = 0;
 
-    let activeTab: 'codes' | 'timelocked' | 'qr' = 'codes';
-    let codeInput = "";
-    let timeBonusInput: Record<string, string> = {};
-    let submitting = false;
-    let submittingTimeBonus: Record<string, boolean> = {};
+    let activeQuestions: any[] = [];
+    let loading = true;
+    let submitting: Record<string, boolean> = {};
+    let answerInputs: Record<string, string> = {};
 
-    // Countdown timer state
-    let countdownIntervals: Record<string, any> = {};
-    let countdowns: Record<string, string> = {};
-    let qrCountdowns: Record<string, string> = {};
+    onMount(async () => {
+        await refreshBonuses();
+    });
 
-    function formatTimeRemaining(releaseTime: string): string {
-        const now = new Date();
-        const release = new Date(releaseTime);
-        const diff = release.getTime() - now.getTime();
-        
-        if (diff <= 0) return "Active!";
-        
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        
-        return `${hours}h ${minutes}m ${seconds}s`;
-    }
-
-    function startCountdown(bonusId: string, releaseTime: string) {
-        if (countdownIntervals[bonusId]) return;
-        
-        const updateCountdown = () => {
-            countdowns[bonusId] = formatTimeRemaining(releaseTime);
-        };
-        
-        updateCountdown();
-        countdownIntervals[bonusId] = setInterval(updateCountdown, 1000);
-    }
-
-    function startQRCountdown(bonusId: string, endTime: string) {
-        if (countdownIntervals[`qr_${bonusId}`]) return;
-        
-        const updateCountdown = () => {
-            const now = new Date();
-            const end = new Date(endTime);
-            const diff = end.getTime() - now.getTime();
-            
-            if (diff <= 0) {
-                qrCountdowns[bonusId] = "Expired";
-                return;
-            }
-            
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            qrCountdowns[bonusId] = `${hours}h ${minutes}m ${seconds}s`;
-        };
-        
-        updateCountdown();
-        countdownIntervals[`qr_${bonusId}`] = setInterval(updateCountdown, 1000);
-    }
-
-    function stopCountdown(bonusId: string) {
-        if (countdownIntervals[bonusId]) {
-            clearInterval(countdownIntervals[bonusId]);
-            delete countdownIntervals[bonusId];
-        }
-    }
-
-    $: {
-        timeLockedBonuses.forEach(bonus => {
-            if (!bonus.isReleased && !bonus.isWon && !bonus.isExpired) {
-                startCountdown(bonus.id, bonus.release_time);
-            }
-        });
-        
-        qrBonuses.forEach(bonus => {
-            if (!bonus.isExpired && !bonus.isClaimed) {
-                startQRCountdown(bonus.id, bonus.stage_end_time);
-            }
-        });
-    }
-
-    async function submitBonusCode() {
-        if (!codeInput.trim()) {
-            sendErrorToast("Enter a code", "Please enter the code you found");
-            return;
-        }
-
-        submitting = true;
+    async function refreshBonuses() {
+        loading = true;
         try {
-            const response = await fetch('/api/bonus/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: codeInput })
-            });
-
-            const result = await response.json();
-
-            if (result.correct) {
-                if (result.alreadyClaimed) {
-                    sendErrorToast("Already claimed", result.message);
-                } else {
-                    sendSuccessToast("Bonus claimed!", `+${result.points} points!`);
-                    await refreshBonuses();
-                }
-            } else {
-                sendErrorToast("Invalid code", result.message || "Try again!");
+            const response = await fetch('/api/bonus');
+            if (response.ok) {
+                const result = await response.json();
+                activeQuestions = result.questions || [];
             }
         } catch (err) {
-            sendErrorToast("Error", "Something went wrong");
+            console.error('Error refreshing bonuses:', err);
         } finally {
-            submitting = false;
-            codeInput = "";
+            loading = false;
         }
     }
 
-    async function submitTimeBonus(bonusId: string, bonus: any) {
-        const answer = timeBonusInput[bonusId]?.trim();
+    async function submitAnswer(questionId: string) {
+        const answer = answerInputs[questionId]?.trim();
+        
         if (!answer) {
             sendErrorToast("Enter answer", "Please enter your answer");
             return;
         }
 
-        submittingTimeBonus[bonusId] = true;
+        submitting[questionId] = true;
         try {
-            const response = await fetch('/api/time-bonus/submit', {
+            const response = await fetch('/api/bonus/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bonusId, answer })
+                body: JSON.stringify({ questionId, answer })
             });
 
             const result = await response.json();
 
             if (result.correct) {
-                sendSuccessToast("🎉 You won!", `+${result.points} points! Lightning fast!`);
+                if (result.alreadySolved) {
+                    sendErrorToast("Check status", result.message);
+                } else if (result.alreadySolvedByUs) {
+                     sendSuccessToast("Already Solved", "You have already won this bonus!");
+                } else {
+                    sendSuccessToast("🎉 Correct!", result.message);
+                }
+                // Refresh to update UI (might hide the question if it's "invisible to others" logic, or show "Solved" state)
                 await refreshBonuses();
             } else {
-                if (result.alreadyClaimed) {
-                    sendErrorToast("Too slow!", "Another team was faster!");
+                if (result.gone) {
+                    sendErrorToast("Too late!", result.message);
+                    await refreshBonuses();
                 } else {
-                    sendErrorToast("Wrong answer", result.message || "Try again!");
+                    sendErrorToast("Incorrect", result.message || "Try again!");
                 }
             }
         } catch (err) {
             sendErrorToast("Error", "Something went wrong");
         } finally {
-            submittingTimeBonus[bonusId] = false;
-            timeBonusInput[bonusId] = "";
+            submitting[questionId] = false;
+            answerInputs[questionId] = "";
         }
     }
-
-    async function refreshBonuses() {
-        try {
-            const response = await fetch('/api/bonus');
-            const result = await response.json();
-            bonusCodes = result.bonusCodes || [];
-            timeLockedBonuses = result.timeLockedBonuses || [];
-            qrBonuses = result.qrBonuses || [];
-        } catch (err) {
-            console.error('Error refreshing bonuses:', err);
-        }
-    }
-
-    function handleQRClaim(qrBonus: any) {
-        if (qrBonus.token) {
-            window.location.href = `/api/qr-bonus/claim?token=${qrBonus.token}`;
-        }
-    }
-
-    onDestroy(() => {
-        Object.keys(countdownIntervals).forEach(key => {
-            if (countdownIntervals[key]) {
-                clearInterval(countdownIntervals[key]);
-            }
-        });
-    });
 </script>
 
 <div class="bonus-section">
@@ -202,7 +85,7 @@
     <div class="bonus-header">
         <div class="bonus-title">
             <Trophy class="text-yellow-500" size={32} />
-            <h2 class="text-2xl font-bold">Bonus Stages</h2>
+            <h2 class="text-2xl font-bold">Bonus Question</h2>
         </div>
         <div class="bonus-points">
             <span class="text-lg">Bonus Points:</span>
@@ -210,233 +93,68 @@
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-        <button 
-            class="tab-btn" 
-            class:active={activeTab === 'codes'}
-            on:click={() => activeTab = 'codes'}
-        >
-            <MapPin size={20} />
-            Campus Codes
-        </button>
-        <button 
-            class="tab-btn" 
-            class:active={activeTab === 'timelocked'}
-            on:click={() => activeTab = 'timelocked'}
-        >
-            <Clock size={20} />
-            Time-Locked
-        </button>
-        <button 
-            class="tab-btn" 
-            class:active={activeTab === 'qr'}
-            on:click={() => activeTab = 'qr'}
-        >
-            <QrCode size={20} />
-            QR Codes
-        </button>
-    </div>
-
-    <!-- Tab Content -->
-    <div class="tab-content">
-        {#if activeTab === 'codes'}
-            <!-- Code Input -->
-            <div class="code-input-section">
-                <Input
-                    id="bonusCode"
-                    placeholder="Enter campus code (e.g., CS-9X4A)"
-                    type="text"
-                    bind:value={codeInput}
-                    onInput={(e) => {
-                        codeInput = e.target.value.toUpperCase();
-                        e.target.value = codeInput;
-                    }}
-                />
-                <button 
-                    class="btn btn-primary btn-wide" 
-                    disabled={submitting}
-                    on:click={submitBonusCode}
-                >
-                    {#if submitting}
-                        <span class="loading loading-spinner"></span>
-                    {:else}
-                        <Gift size={20} />
-                        Submit Code
-                    {/if}
-                </button>
+    <!-- Content -->
+    <div class="bonus-content">
+        {#if loading}
+            <div class="flex justify-center py-8">
+                <span class="loading loading-spinner loading-lg"></span>
             </div>
-
-            <!-- Bonus Codes List -->
-            <div class="bonus-list">
-                {#if bonusCodes.length === 0}
-                    <div class="empty-state">
-                        <AlertTriangle size={48} class="text-warning" />
-                        <p>No active bonus codes yet. Check your clues!</p>
-                    </div>
-                {:else}
-                    {#each bonusCodes as bonus}
-                        <div class="bonus-card" class:claimed={bonus.isClaimed}>
-                            <div class="bonus-card-header">
-                                <MapPin size={24} class="text-primary" />
-                                <span class="font-bold">Code: {bonus.code}</span>
-                                {#if bonus.isClaimed}
-                                    <CheckCircle size={24} class="text-success" />
-                                {:else}
-                                    <XCircle size={24} class="text-error" />
-                                {/if}
-                            </div>
-                            <p class="bonus-clue">{bonus.clue}</p>
-                            <div class="bonus-footer">
-                                <span class="badge badge-primary">+{bonus.points} pts</span>
-                            </div>
-                        </div>
-                    {/each}
-                {/if}
+        {:else if activeQuestions.length === 0}
+            <div class="empty-state">
+                <AlertTriangle size={48} class="text-base-content/30 mb-4" />
+                <p class="text-lg font-medium text-base-content/70">No active bonus questions right now.</p>
+                <p class="text-sm text-base-content/50">Keep an eye out for alerts!</p>
             </div>
-
-        {:else if activeTab === 'timelocked'}
-            <!-- Time-Locked Bonuses -->
-            <div class="bonus-list">
-                {#if timeLockedBonuses.length === 0}
-                    <div class="empty-state">
-                        <Clock size={48} class="text-info" />
-                        <p>No time-locked bonuses scheduled yet.</p>
-                    </div>
-                {:else}
-                    {#each timeLockedBonuses as bonus}
-                        <div class="bonus-card" class:claimed={bonus.isCompleted} class:locked={!bonus.isReleased}>
-                            <div class="bonus-card-header">
-                                <Clock size={24} class="text-info" />
-                                <span class="font-bold">Time-Locked Bonus</span>
-                                {#if bonus.isCompleted}
-                                    <CheckCircle size={24} class="text-success" />
-                                {:else if bonus.isWon}
-                                    <XCircle size={24} class="text-warning" />
-                                {:else if bonus.isExpired}
-                                    <XCircle size={24} class="text-error" />
-                                {:else}
-                                    <Clock size={24} class="text-info" />
-                                {/if}
-                            </div>
-
-                            {#if bonus.isReleased && !bonus.isExpired && !bonus.isWon && !bonus.isCompleted}
-                                <!-- Active time-locked bonus -->
-                                <p class="bonus-question">{bonus.question}</p>
-                                <div class="time-input-section">
-                                    <Input
-                                        id="timeBonus-{bonus.id}"
-                                        placeholder="Enter your answer..."
-                                        type="text"
-                                        bind:value={timeBonusInput[bonus.id]}
-                                    />
-                                    <button 
-                                        class="btn btn-primary" 
-                                        disabled={submittingTimeBonus[bonus.id]}
-                                        on:click={() => submitTimeBonus(bonus.id, bonus)}
-                                    >
-                                        {#if submittingTimeBonus[bonus.id]}
-                                            <span class="loading loading-spinner"></span>
-                                        {:else}
-                                            Submit
-                                        {/if}
-                                    </button>
-                                </div>
-                                <div class="bonus-footer">
-                                    <span class="badge badge-warning">
-                                        ⚡ First correct wins +{bonus.points} pts
-                                    </span>
-                                </div>
-                            {:else if !bonus.isReleased}
-                                <!-- Not yet released -->
-                                <p class="bonus-question">{bonus.question}</p>
-                                <div class="countdown">
-                                    <RefreshCw size={20} class="animate-spin" />
-                                    <span>Releases in: <strong>{countdowns[bonus.id] || 'Loading...'}</strong></span>
-                                </div>
-                                <div class="bonus-footer">
-                                    <span class="badge badge-info">
-                                        {bonus.duration_minutes} min window
-                                    </span>
-                                </div>
-                            {:else if bonus.isWon}
-                                <p class="bonus-status">🎉 Won by another team!</p>
-                            {:else if bonus.isExpired}
-                                <p class="bonus-status">⏰ Bonus expired!</p>
-                            {:else if bonus.isCompleted}
-                                <p class="bonus-status">✅ You completed this!</p>
-                            {/if}
-                        </div>
-                    {/each}
-                {/if}
-            </div>
-
         {:else}
-            <!-- QR Bonuses -->
-            <div class="bonus-list">
-                {#if qrBonuses.length === 0}
-                    <div class="empty-state">
-                        <QrCode size={48} class="text-primary" />
-                        <p>No QR bonuses available. Check back later!</p>
-                    </div>
-                {:else}
-                    {#each qrBonuses as qr}
-                        <div class="bonus-card qr-card" 
-                             class:claimed={qr.isClaimedByTeam} 
-                             class:active={qr.isActive}
-                             class:expired={qr.isExpired}>
-                            
-                            <div class="bonus-card-header">
-                                <QrCode size={24} class="text-primary" />
-                                <span class="font-bold">{qr.title}</span>
-                                {#if qr.isClaimedByTeam}
-                                    <CheckCircle size={24} class="text-success" />
-                                {:else if qr.isClaimed}
-                                    <XCircle size={24} class="text-warning" />
-                                {:else if qr.isExpired}
-                                    <XCircle size={24} class="text-error" />
-                                {:else if qr.isActive}
-                                    <Camera size={24} class="text-success" />
-                                {:else}
-                                    <Clock size={24} class="text-info" />
-                                {/if}
-                            </div>
-                            
-                            <p class="bonus-description">{qr.description}</p>
-                            
-                            {#if qr.location_hint}
-                                <p class="location-hint">📍 {qr.location_hint}</p>
-                            {/if}
-
-                            {#if qr.isActive && !qr.isClaimed && !qr.isClaimedByTeam}
-                                <button 
-                                    class="btn btn-primary btn-wide mt-3"
-                                    on:click={() => handleQRClaim(qr)}
-                                >
-                                    <Camera size={20} />
-                                    Scan QR to Claim
-                                </button>
-                            {:else if !qr.isActive && !qr.isExpired && !qr.isClaimed}
-                                <div class="countdown">
-                                    <Clock size={20} />
-                                    <span>Active in: <strong>{qrCountdowns[qr.id] || 'Loading...'}</strong></span>
-                                </div>
-                            {:else if qr.isClaimedByTeam}
-                                <div class="bonus-footer">
-                                    <span class="badge badge-success">✅ Claimed by You! +{qr.points} pts</span>
-                                </div>
-                            {:else if qr.isClaimed}
-                                <p class="bonus-status">🎯 Claimed by another team!</p>
-                            {:else if qr.isExpired}
-                                <p class="bonus-status">⏰ This QR bonus has expired!</p>
-                            {/if}
-
-                            <div class="bonus-footer">
-                                <span class="badge badge-primary">+{qr.points} pts</span>
-                            </div>
+            <div class="space-y-6">
+                {#each activeQuestions as question (question.id)}
+                    <div class="bonus-card" class:solved={question.isSolvedByMe}>
+                        <div class="card-header">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <Gift class="text-primary" />
+                                {question.isSolvedByMe ? "Solved Bonus" : "Active Bonus Challenge"}
+                            </h3>
+                            <span class="badge badge-lg badge-primary">+{question.points} pts</span>
                         </div>
-                    {/each}
-                {/if}
+
+                        <div class="question-text">
+                            {question.question}
+                        </div>
+
+                        {#if question.isSolvedByMe}
+                            <div class="solved-state">
+                                <CheckCircle size={32} class="text-success" />
+                                <div>
+                                    <p class="font-bold text-success">You solved this!</p>
+                                    <p class="text-sm opacity-70">Solved at {new Date(question.solvedAt?._seconds * 1000).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        {:else}
+                            <div class="input-group">
+                                <Input
+                                    id="answer-{question.id}"
+                                    placeholder="Enter your answer"
+                                    type="text"
+                                    bind:value={answerInputs[question.id]}
+                                />
+                                <button 
+                                    class="btn btn-primary"
+                                    disabled={submitting[question.id]}
+                                    on:click={() => submitAnswer(question.id)}
+                                >
+                                    {#if submitting[question.id]}
+                                        <span class="loading loading-spinner"></span>
+                                    {:else}
+                                        Submit
+                                    {/if}
+                                </button>
+                            </div>
+                            <p class="text-xs text-center mt-2 opacity-60">
+                                ⚡ First team to solve wins. Invisible to others once solved.
+                            </p>
+                        {/if}
+                    </div>
+                {/each}
             </div>
         {/if}
     </div>
@@ -444,11 +162,11 @@
 
 <style>
     .bonus-section {
-        @apply bg-base-200 rounded-lg p-6 mt-6;
+        @apply bg-base-200 rounded-xl p-6 shadow-lg border border-base-300;
     }
 
     .bonus-header {
-        @apply flex justify-between items-center mb-6;
+        @apply flex flex-wrap justify-between items-center mb-8 gap-4;
     }
 
     .bonus-title {
@@ -456,112 +174,38 @@
     }
 
     .bonus-points {
-        @apply bg-base-300 px-4 py-2 rounded-lg flex items-center gap-2;
-    }
-
-    .tabs {
-        @apply flex gap-2 mb-4;
-    }
-
-    .tab-btn {
-        @apply btn btn-outline flex items-center gap-2;
-    }
-
-    .tab-btn.active {
-        @apply btn-primary;
-    }
-
-    .tab-content {
-        @apply min-h-[300px];
-    }
-
-    .code-input-section {
-        @apply flex flex-col gap-4 mb-6;
-    }
-
-    .bonus-list {
-        @apply space-y-4;
-    }
-
-    .bonus-card {
-        @apply bg-base-100 rounded-lg p-4 border-2 border-base-300;
-    }
-
-    .bonus-card.claimed {
-        @apply opacity-60;
-    }
-
-    .bonus-card.locked {
-        @apply border-info;
-    }
-
-    .bonus-card.active {
-        @apply border-success bg-success/5;
-    }
-
-    .bonus-card.expired {
-        @apply border-error opacity-50;
-    }
-
-    .bonus-card.qr-card {
-        @apply border-primary;
-    }
-
-    .bonus-card-header {
-        @apply flex items-center gap-3 mb-2;
-    }
-
-    .bonus-clue {
-        @apply text-base-content/80 mb-3;
-    }
-
-    .bonus-description {
-        @apply text-base-content/90 mb-2;
-    }
-
-    .location-hint {
-        @apply text-sm text-base-content/70 mb-3 italic;
-    }
-
-    .bonus-question {
-        @apply font-medium text-lg mb-3;
-    }
-
-    .bonus-status {
-        @apply text-center py-2 text-warning;
-    }
-
-    .bonus-footer {
-        @apply mt-3 flex justify-end;
-    }
-
-    .time-input-section {
-        @apply flex gap-2 mt-2;
-    }
-
-    .time-input-section :global(input) {
-        @apply flex-1;
-    }
-
-    .countdown {
-        @apply flex items-center gap-2 py-3 text-info;
+        @apply bg-base-300 px-4 py-2 rounded-lg flex items-center gap-2 shadow-inner;
     }
 
     .empty-state {
-        @apply flex flex-col items-center justify-center py-12 text-center;
+        @apply flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-base-300 rounded-lg;
     }
 
-    .empty-state p {
-        @apply mt-4 text-base-content/70;
+    .bonus-card {
+        @apply bg-base-100 rounded-lg p-6 border-l-4 border-primary shadow-md transition-all;
     }
 
-    .animate-spin {
-        @apply inline-block;
-        animation: spin 1s linear infinite;
+    .bonus-card.solved {
+        @apply border-success bg-success/5;
     }
 
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+    .card-header {
+        @apply flex justify-between items-start mb-4;
+    }
+
+    .question-text {
+        @apply text-lg mb-6 font-medium leading-relaxed;
+    }
+
+    .solved-state {
+        @apply flex items-center gap-3 bg-base-200/50 p-4 rounded-lg;
+    }
+
+    .input-group {
+        @apply flex gap-3;
+    }
+    
+    .input-group :global(.form-control) {
+        @apply w-full;
     }
 </style>

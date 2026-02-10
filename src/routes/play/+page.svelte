@@ -9,7 +9,6 @@
         List,
         Lock,
         ArrowUpRight,
-        Gift,
     } from "lucide-svelte";
     import { Doc } from "sveltefire";
     import { IconCoins } from "@tabler/icons-svelte";
@@ -19,52 +18,14 @@
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { page } from "$app/stores";
-    import BonusSection from "@/lib/components/BonusSection.svelte";
 
     let loading = false;
     let answer = "";
-    let showBonusSection = false;
-    let bonusCodes: any[] = [];
-    let timeLockedBonuses: any[] = [];
-    let qrBonuses: any[] = [];
-    let teamBonusPoints = 0;
 
     export let data;
     let questions = data.questions;
     let currQuestion = 0;
     $: currQuestionData = questions[currQuestion];
-
-    onMount(async () => {
-        if (browser) {
-            await loadBonuses();
-        }
-    });
-
-    async function loadBonuses() {
-        try {
-            const response = await fetch('/api/bonus');
-            if (response.ok) {
-                const result = await response.json();
-                bonusCodes = result.bonusCodes || [];
-                timeLockedBonuses = result.timeLockedBonuses || [];
-                qrBonuses = result.qrBonuses || [];
-            }
-        } catch (err) {
-            console.error('Error loading bonuses:', err);
-        }
-    }
-
-    async function loadTeamBonusPoints() {
-        try {
-            const response = await fetch('/api/team');
-            if (response.ok) {
-                const result = await response.json();
-                teamBonusPoints = result.total_bonus_points || 0;
-            }
-        } catch (err) {
-            console.error('Error loading team data:', err);
-        }
-    }
 
     const submitAnswer = async () => {
         loading = true;
@@ -120,14 +81,14 @@
             >
                 <ArrowLeft />
             </button>
-            <span
+            <a
                 class="btn btn-ghost text-xl"
                 class:text-primary={(teamData.completed_levels || []).includes(
                     currQuestionData.uid,
                 )}
             >
                 Level {questions[currQuestion].level}/{questions.length}
-            </span>
+            </a>
             <button
                 class="btn btn-square mr-4"
                 on:click={() => {
@@ -160,14 +121,6 @@
                 <List />
                 Prev Answers
             </button>
-            <button
-                class="btn btn-ghost"
-                class:btn-active={showBonusSection}
-                on:click={() => { showBonusSection = !showBonusSection; if (showBonusSection) loadTeamBonusPoints(); }}
-            >
-                <Gift />
-                Bonuses
-            </button>
         </div>
 
         <center>
@@ -178,7 +131,6 @@
                     {#each currQuestionData.files as f}
                         <span
                             class="link link-primary"
-                            role="button"
                             on:click={() => open(f.url)}>{f.name}</span
                         >
                     {/each}
@@ -189,7 +141,7 @@
                 <center class="mb-4">
                     <div class="flex justify-center flex-row h-60">
                         {#each currQuestionData.images as i}
-                            <img class="mr-2 ml-2 rounded-lg" src={i} alt="Question image" />
+                            <img class="mr-2 ml-2 rounded-lg" src={i} />
                         {/each}
                     </div>
                 </center>
@@ -226,15 +178,6 @@
                 </button>
             {/if}
         </center>
-
-        {#if showBonusSection}
-            <BonusSection 
-                {bonusCodes}
-                {timeLockedBonuses}
-                {qrBonuses}
-                {teamBonusPoints}
-            />
-        {/if}
     </Doc>
 {:else}
     You cannot view this right now.

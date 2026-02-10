@@ -1,15 +1,15 @@
 import type { RequestHandler } from './$types';
 import { json, error, redirect } from '@sveltejs/kit';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminDB } from '$lib/server/admin';
+import { adminDB } from '$lib/server/admin';
 import type { RequestEvent } from '@sveltejs/kit';
 
-const qrBonusesCollectionRef = getAdminDB().collection("/qr_bonuses");
+const qrBonusesCollectionRef = adminDB.collection("/qr_bonuses");
 
 // GET - Verify and claim QR bonus
 export async function GET({ locals, url }: RequestEvent) {
     const token = url.searchParams.get("token");
-    
+
     if (!token) {
         return json({ error: "Invalid QR code" }, { status: 400 });
     }
@@ -28,7 +28,7 @@ export async function GET({ locals, url }: RequestEvent) {
     try {
         // Find the QR bonus by token
         const querySnap = await qrBonusesCollectionRef.where("token", "==", token).get();
-        
+
         if (querySnap.empty) {
             return json({ error: "Invalid QR code" }, { status: 404 });
         }
@@ -58,7 +58,7 @@ export async function GET({ locals, url }: RequestEvent) {
         }
 
         // Get team data
-        const teamRef = getAdminDB().collection('/teams').doc(teamId);
+        const teamRef = adminDB.collection('/teams').doc(teamId);
         const teamDoc = await teamRef.get();
         const teamData = teamDoc.data();
         const completedQRBonuses = teamData?.qr_bonuses_completed || [];
@@ -81,7 +81,7 @@ export async function GET({ locals, url }: RequestEvent) {
         }
 
         // Use transaction for atomic claim
-        await getAdminDB().runTransaction(async (transaction) => {
+        await adminDB.runTransaction(async (transaction) => {
             const qrSnapshot = await qrBonusesCollectionRef.doc(qrId).get();
             const currentQRData = qrSnapshot.data();
 
@@ -105,7 +105,7 @@ export async function GET({ locals, url }: RequestEvent) {
             });
 
             // Log the claim
-            const logRef = getAdminDB().collection("logs").doc(teamId);
+            const logRef = adminDB.collection("logs").doc(teamId);
             transaction.set(logRef, {
                 count: FieldValue.increment(1),
                 logs: FieldValue.arrayUnion({
@@ -123,7 +123,7 @@ export async function GET({ locals, url }: RequestEvent) {
 
         return json({
             success: true,
-            message: `🎉 QR Bonus Claimed! +${qrData.points || 300} points!`,
+            message: `🎉 QR Bonus Claimed! + ${qrData.points || 300} points!`,
             points: qrData.points || 300,
             bonus: {
                 id: qrId,
@@ -134,7 +134,7 @@ export async function GET({ locals, url }: RequestEvent) {
 
     } catch (err: any) {
         console.error('Error claiming QR bonus:', err);
-        
+
         if (err.message === "QR bonus already claimed") {
             return json({
                 error: "Another team was faster!",
@@ -154,7 +154,7 @@ export async function POST({ locals, request }: RequestEvent) {
 
     try {
         const { token } = await request.json();
-        
+
         if (!token) {
             return json({ error: "Token is required" }, { status: 400 });
         }
@@ -164,7 +164,7 @@ export async function POST({ locals, request }: RequestEvent) {
         const teamId = locals.userTeam;
 
         const querySnap = await qrBonusesCollectionRef.where("token", "==", token).get();
-        
+
         if (querySnap.empty) {
             return json({ error: "Invalid QR code" }, { status: 404 });
         }
@@ -191,7 +191,7 @@ export async function POST({ locals, request }: RequestEvent) {
         }
 
         // Atomic claim using transaction
-        await getAdminDB().runTransaction(async (transaction) => {
+        await adminDB.runTransaction(async (transaction) => {
             const qrSnapshot = await qrBonusesCollectionRef.doc(qrId).get();
             const currentQRData = qrSnapshot.data();
 
@@ -205,7 +205,7 @@ export async function POST({ locals, request }: RequestEvent) {
                 claimed_by_user: userId
             });
 
-            const teamRef = getAdminDB().collection('/teams').doc(teamId);
+            const teamRef = adminDB.collection('/teams').doc(teamId);
             transaction.update(teamRef, {
                 qr_bonuses_completed: FieldValue.arrayUnion(qrId),
                 total_bonus_points: FieldValue.increment(qrData.points || 300),

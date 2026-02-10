@@ -1,9 +1,9 @@
 import type { RequestHandler } from './$types';
 import { error, json, redirect } from '@sveltejs/kit';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminDB } from '$lib/server/admin';
+import { adminDB } from '$lib/server/admin';
 
-const questionsCollectionRef = getAdminDB().collection("/levels");
+const questionsCollectionRef = adminDB.collection("/levels");
 const questionMap = new Map<string, any>();
 let loaded = false;
 
@@ -29,9 +29,9 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
         `answer ${answer} ${typeof answer}`,
     );
 
-    const userDoc = await getAdminDB().collection('/users').doc(locals.userID).get();
-    const teamId = userDoc.data()?.team;
-    const team = await getAdminDB().collection('/teams').doc(teamId).get();
+    const userDoc = await adminDB.collection('/users').doc(locals.userID).get();
+    const teamId = userDoc.data().team;
+    const team = await adminDB.collection('/teams').doc(teamId).get();
     const level = team.data().level;
     let isAdmin = false;
     try {
@@ -52,15 +52,15 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
     const questionsVisible = now >= startTime && now <= endTime;
     if (!isAdmin && !questionsVisible) return error(405, "Method Not Allowed");
     if (!questionMap.has(questionId)) return error(404, "Not Found");
-    const submittedLevelDoc = await getAdminDB().collection('/levels').doc(questionId).get();
+    const submittedLevelDoc = await adminDB.collection('/levels').doc(questionId).get();
     const submittedLevel = submittedLevelDoc.data().level;
     if (level < submittedLevel) return error(405, "Method Not Allowed");
     if (answer === null || answer.trim() === "") return error(400, "Bad Request");
     answer = answer.toLowerCase();
     let actualAnswer = questionMap.get(questionId).answer;
     let wasCorrect = false;
-    await getAdminDB().runTransaction(async (transaction) => {
-        const teamRef = getAdminDB().collection("teams").doc(locals.userTeam!);
+    await adminDB.runTransaction(async (transaction) => {
+        const teamRef = adminDB.collection("teams").doc(locals.userTeam!);
         const teamDoc = await teamRef.get();
         if (!teamDoc.exists) return error(500, "Something went wrong");
         const teamData = teamDoc.data();
@@ -69,7 +69,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
         if (completedLevels.includes(questionId)) return json({
             correct: true
         });
-        const logRef = getAdminDB().collection("logs").doc(locals.userTeam!);
+        const logRef = adminDB.collection("logs").doc(locals.userTeam!);
         if (answer === actualAnswer) {
             let next_level = teamData.level;
             if (teamData.gsv_verified || !teamData.gsv_verified) next_level++;

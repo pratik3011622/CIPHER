@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getAdminDB } from '$lib/server/admin';
+import { adminDB } from '$lib/server/admin';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function GET({ locals }: RequestEvent) {
@@ -8,22 +8,23 @@ export async function GET({ locals }: RequestEvent) {
     }
 
     try {
-        const teamDoc = await getAdminDB().collection('/teams').doc(locals.userTeam).get();
-        
+        const teamDoc = await adminDB.collection('/teams').doc(locals.userTeam).get();
+
         if (!teamDoc.exists) {
             return json({ error: "Team not found" }, { status: 404 });
         }
 
         const teamData = teamDoc.data();
-        
+
+        // Return only relevant data for the new system
         return json({
             teamId: teamDoc.id,
             teamName: teamData?.teamName,
             level: teamData?.level,
             total_bonus_points: teamData?.total_bonus_points || 0,
-            bonus_codes_completed: teamData?.bonus_codes_completed || [],
-            time_locked_bonuses_completed: teamData?.time_locked_bonuses_completed || [],
             members: teamData?.members || [],
+            // bonus_codes_completed and time_locked_bonuses_completed are deprecated
+            // We can add 'bonus_questions_solved' if we want to track that in the future
             gsv_verified: teamData?.gsv_verified || false
         });
 

@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp, deleteApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
@@ -13,8 +13,15 @@ const firebaseConfig = {
   measurementId: "G-SMWFYFEQQT"
 };
 
-// Initialize Firebase
-export const app = initializeApp(firebaseConfig);
-export const db = getFirestore();
-export const auth = getAuth();
-export const storage = getStorage();
+// Robust initialization for HMR
+let app;
+if (getApps().length) {
+  app = getApp();
+  deleteApp(app); // Delete stale app
+}
+app = initializeApp(firebaseConfig);
+
+export { app };
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const storage = getStorage(app);

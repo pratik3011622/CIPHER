@@ -4,7 +4,7 @@
 
     export let data;
     import {Doc} from 'sveltefire';
-    import {Button} from "@/lib/components/ui/MovingBorder";
+    import {Button} from "@/components/ui/MovingBorder";
     import {Hammer} from "lucide-svelte";
     let clicked = false;
     let loading = false;

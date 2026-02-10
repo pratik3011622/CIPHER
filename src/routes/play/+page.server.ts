@@ -1,37 +1,30 @@
 import { redirect } from '@sveltejs/kit';
-import { getAdminDB } from '../../lib/server/admin';
+import { adminDB } from '@/server/admin';
 
-export const prerender = false;
+const collectionRef = adminDB.collection('/levels').orderBy('level');
+
+let loaded = false;
+let questions = [];
 
 export const load = async ({ locals }) => {
-  try {
-    if (
-      !locals.userID ||
-      !locals.userExists ||
-      !locals.userTeam
-    ) {
-      return redirect(302, '/ready');
+  const userDoc = await adminDB.collection('/users').doc(locals.userID).get();
+  const teamId = userDoc.data().team;
+  const team = await adminDB.collection('/teams').doc(teamId).get();
+  const level = team.data().level;
+
+  const now = new Date();
+  const startTime = new Date("2026-03-10T18:39:00Z");
+  const endTime = new Date("2026-03-14T18:39:00Z");
+
+  const questionsVisible = now >= startTime && now <= endTime;
+
+  if (questionsVisible) {
+
+    if (locals.banned) {
+      return redirect(302, '/team');
     }
 
-    const userDoc = await getAdminDB().collection('/users').doc(locals.userID).get();
-    const teamId = userDoc.data()?.team;
-    const team = await getAdminDB().collection('/teams').doc(teamId).get();
-    const level = team.data().level;
-
-    const now = new Date();
-    const startTime = new Date("2026-02-02T00:00:00Z"); // Event starts Feb 2, 2026 (past - for testing)
-    const endTime = new Date("2026-03-14T18:39:00Z");
-
-    const questionsVisible = now >= startTime && now <= endTime;
-
-    let questions = [];
-
-    if (questionsVisible) {
-      if (locals.banned) {
-        return redirect(302, '/team');
-      }
-
-      const collectionRef = getAdminDB().collection('/levels').orderBy('level');
+    if (!loaded) {
       const querySnapshot = await collectionRef.get();
       querySnapshot.docs.forEach((d) => {
         let data = d.data();
@@ -39,14 +32,32 @@ export const load = async ({ locals }) => {
         data['creator'] = null;
         questions.push(data);
       });
+
+      collectionRef.onSnapshot((newSnapshot) => {
+        const newQuestions = [];
+        newSnapshot.docs.forEach((d) => {
+          let newData = d.data();
+          newData['answer'] = null;
+          newData['creator'] = null;
+          newQuestions.push(newData);
+        });
+        questions = newQuestions;
+        console.log('new update');
+      });
+      loaded = true;
     }
 
-    return {
-      locals,
-      questions: questions.slice(0, level),
-    };
-  } catch (err) {
-    console.error('Error loading play page:', err);
-    throw redirect(302, '/ready');
+    if (
+      !locals.userID ||
+      !locals.userExists ||
+      !locals.userTeam
+    ) {
+      return redirect(302, '/ready');
+    }
   }
+
+  return {
+    locals,
+    questions: questions.slice(0, level),
+  };
 };

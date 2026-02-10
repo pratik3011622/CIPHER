@@ -1,105 +1,72 @@
 import { json } from '@sveltejs/kit';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminDB } from '$lib/server/admin';
+import { adminDB } from '$lib/server/admin';
 import type { RequestEvent, RequestHandler } from '@sveltejs/kit';
 
-const bonusCodesCollectionRef = getAdminDB().collection("/bonus_codes");
-const timeLockedBonusesCollectionRef = getAdminDB().collection("/time_locked_bonuses");
+const bonusQuestionsRef = adminDB.collection("bonus_questions");
 
-// GET - List all bonuses
-export const GET: RequestHandler = async ({ locals, url }: RequestEvent) => {
+// GET - List all bonus questions
+export const GET: RequestHandler = async ({ locals }: RequestEvent) => {
     // TODO: Add proper admin check
     const isAdmin = locals.userID === "admin" || locals.userID === null;
-    
+
     if (!isAdmin) {
         return json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const bonusType = url.searchParams.get("type") || "all";
-    const result: any = {};
-
     try {
-        if (bonusType === "all" || bonusType === "bonus_codes") {
-            const bonusCodesSnap = await bonusCodesCollectionRef.orderBy("created_at", "desc").get();
-            result.bonusCodes = bonusCodesSnap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-        }
+        const snapshot = await bonusQuestionsRef.orderBy("created_at", "desc").get();
+        const questions = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
 
-        if (bonusType === "all" || bonusType === "time_locked") {
-            const timeBonusesSnap = await timeLockedBonusesCollectionRef.orderBy("release_time", "desc").get();
-            result.timeLockedBonuses = timeBonusesSnap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-        }
-
-        return json(result);
+        return json({ questions });
 
     } catch (err) {
-        console.error('Error fetching bonuses:', err);
+        console.error('Error fetching bonus questions:', err);
         return json({ error: "Something went wrong" }, { status: 500 });
     }
 };
 
-// POST - Create a new bonus
+// POST - Create a new bonus question
 export const POST: RequestHandler = async ({ request, locals }: RequestEvent) => {
     // TODO: Add proper admin check
     const isAdmin = locals.userID === "admin" || locals.userID === null;
-    
+
     if (!isAdmin) {
         return json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
         const body = await request.json();
-        const { type, ...bonusData } = body;
+        const { question, answer, answers, points, clue_text, clue_qr_token, is_active } = body;
 
-        if (type === "bonus_code") {
-            const newBonusRef = await bonusCodesCollectionRef.add({
-                code: bonusData.code.toUpperCase(),
-                clue: bonusData.clue,
-                location: bonusData.location || "",
-                is_active: true,
-                winner_team_id: null,
-                winner_timestamp: null,
-                points: bonusData.points || 500,
-                created_at: FieldValue.serverTimestamp(),
-                expires_at: bonusData.expires_at ? new Date(bonusData.expires_at) : null
-            });
-
-            return json({ 
-                success: true, 
-                bonusId: newBonusRef.id,
-                message: "Bonus code created successfully"
-            });
-
-        } else if (type === "time_locked") {
-            const newBonusRef = await timeLockedBonusesCollectionRef.add({
-                question: bonusData.question,
-                answer: bonusData.answer,
-                release_time: new Date(bonusData.release_time),
-                duration_minutes: bonusData.duration_minutes || 30,
-                is_active: true,
-                winner_team_id: null,
-                winner_timestamp: null,
-                points: bonusData.points || 1000,
-                created_at: FieldValue.serverTimestamp()
-            });
-
-            return json({ 
-                success: true, 
-                bonusId: newBonusRef.id,
-                message: "Time-locked bonus created successfully"
-            });
-
-        } else {
-            return json({ error: "Invalid bonus type" }, { status: 400 });
+        if (!question || (!answer && !answers)) {
+            return json({ error: "Question and answer are required" }, { status: 400 });
         }
 
+        const newBonusRef = await bonusQuestionsRef.add({
+            question,
+            answer: answer || answers[0],
+            answers: answers || [answer], // Array of valid answers
+            points: points || 1000,
+            clue_text: clue_text || "No clue provided.",
+            clue_qr_token: clue_qr_token || crypto.randomUUID(), // Auto-generate if not provided
+            is_active: is_active !== undefined ? is_active : true, // Default to active
+            solved_by_team_id: null,
+            solved_at: null,
+            created_at: FieldValue.serverTimestamp()
+        });
+
+        return json({
+            success: true,
+            bonusId: newBonusRef.id,
+            message: "Bonus question created successfully"
+        });
+
     } catch (err) {
-        console.error('Error creating bonus:', err);
+        console.error('Error creating bonus question:', err);
         return json({ error: "Something went wrong" }, { status: 500 });
     }
 };
